@@ -7,13 +7,23 @@ Created on Sun Aug 20 16:27:54 2017
 
 import pandas as pd
 
-# Data import from CSV file
+# 1. Data import from CSV file
 
-df = pd.read_csv('/Data/MonthlySales.csv')
+df1 = pd.read_csv('/Data/MonthlySales.csv')
+
+df = pd.read_csv('/data/MonthlyProductSales.csv',  encoding='cp1252')
 
 df
 
-# Data import from JSON file
+# Summeried to yearly product sales totals
+df_export = df.groupby([df['Month of Order Date'].str[:4], 'Product Name']).sum().reset_index()
+df_export = df_export.rename(columns={'Month of Order Date': 'Year of Order'})
+
+# export to csv
+df_export.to_csv('data/output/YearlyProductSalesTotals.csv', header=True, index=False, encoding='utf-8')
+
+
+# 2. Data import from JSON file
 
 import json
 from pandas.io.json import json_normalize
@@ -23,9 +33,11 @@ with open('/data/monthlySalesbyCategoryMultiple.json') as json_data:
 
 df = json_normalize(d['contents'], 'monthlySales', ['category', 'region'])
 
-df
+# export to json
+df_export.to_json('data/output/YearlyProductSalesTotals.json', orient='records')
 
-# Data import from parquet file
+
+# 3. Data import from parquet file
 # pip install pyarrow
 
 import pyarrow.parquet as pq
@@ -34,7 +46,7 @@ table = pq.read_table('/data/MonthlyProductSales.parquet')
 table.to_pandas()
 
 
-# Data import from excel file
+# 4. Data import from excel file
 # pip install xlrd
 
 from pandas import ExcelWriter
